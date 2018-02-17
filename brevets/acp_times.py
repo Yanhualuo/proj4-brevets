@@ -15,6 +15,8 @@ import arrow
 #  javadoc comments.
 #
 
+max_speed = {200: 34, 400: 32, 600:30, 1000: 28, 1300: 26}
+min_speed = {200: 15, 400: 15, 600:15, 1000: 11.428, 1300:13.333}
 
 def open_time(control_dist_km, brevet_dist_km, brevet_start_time):
     """
@@ -29,8 +31,27 @@ def open_time(control_dist_km, brevet_dist_km, brevet_start_time):
        An ISO 8601 format date string indicating the control open time.
        This will be in the same time zone as the brevet start time.
     """
-    return arrow.now().isoformat()
-
+    if control_dist_km == 0:
+        return brevet_start_time.isoformat()
+   
+    time = 0.0
+    distance = 0
+    
+    for bre in max_speed:
+       spd = max_speed.get(bre)
+       if (int(control_dist_km) >= bre):
+           time += 200/spd
+           distance = bre       
+       else:
+           lo = control_dist_km - distance
+           time += (lo/spd)
+           break
+    time = round(time * 60) #convert into minutes
+    arw = arrow.get(brevet_start_time)
+    arw = arw.shift(minutes=+time)
+    
+    
+    return arw.isoformat()
 
 def close_time(control_dist_km, brevet_dist_km, brevet_start_time):
     """
@@ -45,4 +66,25 @@ def close_time(control_dist_km, brevet_dist_km, brevet_start_time):
        An ISO 8601 format date string indicating the control close time.
        This will be in the same time zone as the brevet start time.
     """
-    return arrow.now().isoformat()
+    if control_dist_km == 0:
+        return brevet_start_time.isoformat()
+    
+    time = 0.0
+    distance = 0
+    
+    for bre in min_speed:
+       spd = min_speed.get(bre)
+       if (int(control_dist_km) >= bre):
+           time += 200/spd
+           distance = bre       
+       else:
+           lo = control_dist_km - distance
+           time += (lo/spd)
+           break
+    print("hour is ", time)
+    time = round(time * 60) #convert into minutes
+    arw = arrow.get(brevet_start_time)
+    arw = arw.shift(minutes=+time)
+    
+    
+    return arw.isoformat()
